@@ -21,39 +21,54 @@
 # *                                                                         *
 # ***************************************************************************/
 
+""" FreeCAD Command """
+
 import os
-import FreeCAD
+import FreeCAD,Part
+import FreeCADGui
+from PySide import QtCore,QtGui
 
-class BimModelWorkbench(Workbench):
+class _MainForm_Class():
 
-    MenuText = "BIM Model"
-    ToolTip = "Tools for BIM Modeling"
-    Icon = os.path.join(FreeCAD.getHomePath(), "Mod", "BimModel", "icons", "UniBim_logo_32.svg")
-    
-    def Initialize(self):
-        """This function is executed when FreeCAD starts"""
-        import HolaMundo
-        import MainForm
-        self.list = ['HolaMundo_Command', 'MainForm_Command'] # A list of command names created
-        self.appendToolbar("BimModelToolbar", self.list) # creates a new toolbar with your commands
-        self.appendMenu("BimModel", self.list) # creates a new menu
-        #self.appendMenu(["BimModel","My submenu"],self.list) # appends a submenu to an existing menu
+	def GetResources(self):
+		return {'Pixmap' : os.path.join(FreeCAD.getHomePath(), "Mod", "BimModel", "icons", "MF_256.svg"),
+		  'Accel' : "",
+		  'MenuText' : 'Main Form',
+		  'ToolTip' : 'Show a Main Form'}
+	
+	def Activated(self):
+		
+		#Load dialog
+		self.form = FreeCADGui.PySideUic.loadUi(os.path.join(FreeCAD.getHomePath(), "Mod", "BimModel", "ui_main.ui"))
 
-    def Activated(self):
-        """This function is executed when the workbench is activated"""
-        return
+		# Center the form
+		mw = FreeCADGui.getMainWindow()
+		self.form.move(mw.frameGeometry().topLeft() + mw.rect().center() - self.form.rect().center())
 
-    def Deactivated(self):
-        """This function is executed when the workbench is deactivated"""
-        return
+		# connect signals/slots
+		self.form.btnApply.clicked.connect(self.createPlane)
 
-    def ContextMenu(self, recipient):
-        """This is executed whenever the user right-clicks on screen"""
-        # "recipient" will be either "view" or "tree"
-        self.appendContextMenu("BIM Commands", self.list) # add commands to the context menu
 
-    def GetClassName(self): 
-        # this function is mandatory if this is a full python workbench
-        return "Gui::PythonWorkbench"
+		# Show Dialog
+		self.form.show()
 
-Gui.addWorkbench(BimModelWorkbench())
+	def createPlane(self):
+		try:
+			# first we check if valid numbers have been entered
+			w = float(self.form.txtAncho.text())
+			h = float(self.form.txtAlto.text())
+		except ValueError:
+			QtGui.QMessageBox.information(None, "Error", "Error! Width and Height values must be valid numbers!")
+		else:
+			# create a face from 4 points
+			p1 = FreeCAD.Vector(0,0,0)
+			p2 = FreeCAD.Vector(w,0,0)
+			p3 = FreeCAD.Vector(w,h,0)
+			p4 = FreeCAD.Vector(0,h,0)
+			pointList = [p1,p2,p3,p4,p1]
+			myWire = Part.makePolygon(pointList)
+			myFace = Part.Face(myWire)
+			Part.show(myFace)
+			self.form.hide()
+		
+FreeCADGui.addCommand('MainForm_Command', _MainForm_Class())

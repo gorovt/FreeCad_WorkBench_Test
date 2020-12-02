@@ -5,7 +5,7 @@ from PySide import QtGui
 class _HolaMundo_Class():
 
 	def GetResources(self):
-		return {'Pixmap' : os.path.join(FreeCAD.getHomePath(), "Mod", "BimModel", "icons", "UniBim_logo_32.svg"),
+		return {'Pixmap' : os.path.join(FreeCAD.getHomePath(), "Mod", "BimModel", "icons", "HM_256.svg"),
 		  'Accel' : "",
 		  'MenuText' : 'Hola Mundo',
 		  'ToolTip' : 'Show a Hola Mundo message'}
